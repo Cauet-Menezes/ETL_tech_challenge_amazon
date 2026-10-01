@@ -1,0 +1,6 @@
+﻿id_quadrante;quadrante;engajamento;satisfacao;acao_sugerida;regra
+1;Estrelas;Alto;Alta;Manter e destacar;rating_count > mediana e rating >= 4,0
+2;Promessas;Baixo;Alta;Divulgar mais;rating_count <= mediana e rating >= 4,0
+3;Problemáticos;Alto;Baixa;Corrigir qualidade;rating_count > mediana e rating < 4,0
+4;Descartáveis;Baixo;Baixa;Revisar ou descontinuar;rating_count <= mediana e rating < 4,0
+5;Sem dados;Indefinido;Indefinida;Coletar avaliações;rating ausente
