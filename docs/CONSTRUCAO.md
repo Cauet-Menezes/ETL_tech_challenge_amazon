@@ -63,7 +63,33 @@ Implementação:
 ## 5. Qualidade
 56 testes (`tests/test_transform_produtos.py`, `test_transform_reviews.py`, `test_build_gold.py`) e `ruff` sem alertas.
 
-## 6. Próximos passos
-- `fato_termo_produto` e `dim_tema` (termos, temas, sentimento; o léxico de sentimento pede aprovação de dependência nova, como `vaderSentiment`).
-- Versionar `data/raw/amazon.csv` e `saida_bi/` (nada foi commitado ainda).
-- Revisar as pendências em aberto: `rating_count` máximo entre duplicatas e marcas compostas fora da lista.
+## 6. Versionamento
+Feitos 10 commits na `main` (padrão `chore`/`docs`/`feat`), incluindo `data/raw/amazon.csv`, `DER.jpeg` e `saida_bi/`. `.idea/` e `.claude/settings.local.json` ficam de fora. O push desses commits para o remoto já foi feito.
+
+## 7. O que falta construir
+
+### 7.1 `fato_termo_produto` e `dim_tema` (seção 5 da especificação)
+Única parte do DER ainda sem código. O que já está acordado:
+- `fato_termo_produto`: unigramas e bigramas de `about_product` (e do texto das reviews, por produto), com `tipo_termo` (uni/bigrama), `frequencia`, `sentimento`, `score_sentimento` e `id_tema`. PK `(id_produto, termo)`.
+- `dim_tema`: mapa de palavras-chave para temas (ex.: bateria, cabo, preço), com `id_tema`, `tema` e `descricao`.
+
+Decisões a tomar antes de codar (propor o plano e esperar aprovação, como manda o CLAUDE.md):
+1. **Texto das reviews:** o bruto traz `review_title` e `review_content` como listas por vírgula, e o texto tem vírgulas próprias (até 125 num campo). Recomendado: usar o texto **por produto** (sem separar por review). Alternativa: avaliar a viabilidade de separar em reviews individuais (risco de associar o texto à review errada). A `fato_review` não ganha colunas sem pedido, porque isso altera o DER.
+2. **Sentimento:** precisa de um léxico. Opções: `vaderSentiment` (dependência nova, **exige aprovação**) ou um léxico pequeno feito à mão (sem dependência, menos preciso).
+3. **Limpeza do texto:** stopwords, minúsculas, remoção de números e símbolos, e como tratar a frequência mínima para o bigrama não explodir o tamanho do CSV.
+4. **Lista de temas e palavras-chave** para `dim_tema`, e o que fazer com termos sem tema (FK nulo ou tema "Outros", seguindo a lição do `rating` nulo).
+
+Entregáveis desse bloco: módulo (ex.: `src/transform_termos.py`) com testes, tabelas incluídas no `build_gold_tables`, PK e FK validadas (`(id_produto, termo)` único e `id_tema` existente), atualização da especificação, do README e deste arquivo.
+
+### 7.2 Pendências de regra
+- **`rating_count` de duplicatas:** hoje vale a primeira ocorrência; decidir se passa a valer o maior valor (difere em 31 produtos).
+- **Marcas compostas fora da lista:** continuam cortadas na primeira palavra; a correção é acrescentar a marca em `COMPOSITE_BRANDS`.
+- **`fato_review`:** decisão sobre o texto das reviews (item 7.1.1), registrada no CLAUDE.md para revisão.
+
+### 7.3 Integração com o Power BI (fora do Python)
+- Importar os CSVs de `saida_bi/` (UTF-8, vírgula decimal) e criar os relacionamentos PK/FK do DER.
+- Ordenar `faixa` por `ordem` nas dimensões de faixa.
+- Construir os visuais da pergunta Preço → Desconto → Engajamento → Satisfação e as recomendações por quadrante.
+
+### 7.4 Engenharia
+- Se o repositório for compartilhado, avaliar uma checagem automática (testes e lint) na integração contínua.
